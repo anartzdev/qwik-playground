@@ -1,5 +1,6 @@
-import { component$, qrl, $, useStore } from '@builder.io/qwik';
+import { component$, $, useStore, useClientEffect$ } from '@builder.io/qwik';
 import type { DocumentHead } from '@builder.io/qwik-city';
+import { ScoreBoard } from '~/components/game/scoreboard';
 
 export default component$(() => {
   const info = useStore({
@@ -8,19 +9,19 @@ export default component$(() => {
     computer: 0,
   });
 
-   /**
+  /**
    * Math Random para generar un random y multiplicamos por 3
    * Redondeamos el entero superior, quedando 0,1,2 como posibles resultados
    * y con ello selecciona Piedra (r), Papel (p) ó Tijera (s)
    */
-   const getComputerChoice = $(() => {
+  const getComputerChoice = $(() => {
     const choices = ['r', 'p', 's']; // Roca, Pape, Tijeras
     const randomChoice = Math.floor(Math.random() * 3);
     return choices[randomChoice];
   });
 
   const gameManage = $(async (userChoice: string) => {
-    const playUserComp = userChoice + await getComputerChoice();
+    const playUserComp = userChoice + (await getComputerChoice());
     console.log(`Jugada realizada: ${playUserComp}`);
     switch (playUserComp) {
       // Ganamos
@@ -44,15 +45,16 @@ export default component$(() => {
         info.result = 'Habéis elegido la misma jugada y habéis empatado';
         break;
     }
-    
   });
-
- 
 
   // $ ES SUPER IMPORTANTE
   const play = $(async (value: any) => {
     console.log(await getComputerChoice());
-    await gameManage(value)
+    await gameManage(value);
+  });
+
+  useClientEffect$(() => {
+    // Put code here to periodically call updateClock().
   });
 
   return (
@@ -60,16 +62,7 @@ export default component$(() => {
       <div class='title'>
         <h1>¡¡Piedra, Papel ó Tijera!!</h1>
       </div>
-      <div class='score-board'>
-        <div id='user-label' class='badge'>
-          user
-        </div>
-        <div id='comp-label' class='badge'>
-          comp
-        </div>
-        <span id='user-score'>{info.user}</span>:
-        <span id='comp-score'>{info.computer}</span>
-      </div>
+      <ScoreBoard user={info.user} computer={info.computer} />
       <p class='info-game'>{info.result}</p>
       <div class='choices'>
         <div class='choice' onClick$={() => play('r')}>
